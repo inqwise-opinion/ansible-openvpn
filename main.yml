@@ -1,0 +1,58 @@
+# openvpn.yml
+# performs openvpn Access Server installation
+- name: openvpn
+  hosts: all
+  become: yes  # Use sudo to execute tasks
+
+  vars:
+    - discord_message_environment: "{{ environment_name }}"
+
+  vars_files:
+    - defaults.yml
+          
+  tasks:
+  - block:
+
+    - name: install mc
+      ansible.builtin.package:
+        name:
+          - 'mc'
+        state: present    
+
+    - name: include main vars
+      include_vars:
+        dir: vars/main
+        files_matching: "{{ private_domain }}.yml"
+
+    - name: include aws credentials vars
+      include_vars:
+        dir: vars/credentials
+        files_matching: "{{ private_domain }}.yml"
+
+    - name: include users and groups vars
+      include_vars:
+        file: access.yml
+        name: access
+
+    - include_role:
+        name: users
+      vars:
+        users_groups: &groups "{{ access.users_groups }}"
+        users: &users "{{ access.users }}"
+        users_group_list: *groups
+        users_user_list: *users
+
+    - name: stuff
+      import_tasks: stuff.yml
+
+    - include_role:
+        name: discord
+    
+    rescue:
+      - name: send fail message
+        include_role:
+          name: discord
+      - name: re-raise the error
+        fail:
+          msg: "{{ ansible_failed_result }}"
+        when: ansible_failed_result is defined

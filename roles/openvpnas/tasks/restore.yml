@@ -1,0 +1,18 @@
+---
+- name: copy vault-password file
+  template:
+    src: vault-password.j2
+    dest: /opt/backup/vault-password
+
+- name: copy restore script
+  template:
+    src: restore-path-s3.j2
+    dest: /opt/backup/openvpn-restore.sh
+    mode: '100770'
+
+- name: run restore script
+  shell:
+    cmd: /opt/backup/openvpn-restore.sh
+  notify:
+    - update db
+    - restart openvpn_as
