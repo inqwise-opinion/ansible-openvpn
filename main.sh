@@ -8,7 +8,7 @@ main () {
     pip3.8 install -r requirements.txt --user virtualenv
     export ANSIBLE_ROLES_PATH="$(pwd)/ansible-galaxy/roles"
     ansible-galaxy install -p roles -r requirements.yml
-    ansible-playbook --connection=local --inventory 127.0.0.1, --limit 127.0.0.1 main.yml --skip-tags message
+    ansible-playbook --connection=local --inventory 127.0.0.1, --limit 127.0.0.1 main.yml --skip-tags openvpn
 }
 trap 'catch_error "$ERROR"' ERR
 { ERROR=$(main 2>&1 1>&$out); } {out}>&1

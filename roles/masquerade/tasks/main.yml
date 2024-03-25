@@ -9,7 +9,7 @@
     destination: '{{ masquerade_destination }}'
     jump: MASQUERADE
     protocol: '{{ masquerade_protocol }}'
-    comment: Ansible NAT Masquerade
+    comment: 'Ansible NAT Masquerade'
 
 - name: Enable IPv4 forwarding
   sysctl:
