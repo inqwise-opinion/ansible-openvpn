@@ -1,5 +1,7 @@
 #!/bin/bash
 
+DIR=$PWD
+
 cd /usr/local/openvpn_as/etc/db
 [ -e config.db ]&&sqlite3 config.db .dump>../../config.db.bak
 [ -e certs.db ]&&sqlite3 certs.db .dump>../../certs.db.bak
@@ -7,8 +9,18 @@ cd /usr/local/openvpn_as/etc/db
 [ -e log.db ]&&sqlite3 log.db .dump>../../log.db.bak
 [ -e config_local.db ]&&sqlite3 config_local.db .dump>../../config_local.db.bak
 [ -e cluster.db ]&&sqlite3 cluster.db .dump>../../cluster.db.bak
-[ -e clusterdb.db ]&&sqlite3 clusterdb.db .dump>../../clusterdb.db.bak
+##[ -e clusterdb.db ]&&sqlite3 clusterdb.db .dump>../../clusterdb.db.bak
 [ -e notification.db ]&&sqlite3 notification.db .dump>../../notification.db.bak
 cp ../as.conf ../../as.conf.bak
-/usr/local/bin/ansible-vault encrypt /usr/local/openvpn_as/*.bak --vault-password-file /opt/backup/vault-password
-aws s3 cp /usr/local/openvpn_as/ s3://{{s3_bucket_backup}}/{{ private_dns }}  --recursive --exclude "*" --include "*.bak"
+
+###/tmp/ansible-openvpn/ansible-vault encrypt /usr/local/openvpn_as/*.bak --vault-password-file /opt/backup/vault-password
+
+zip "$DIR/db.zip" /usr/local/openvpn_as/*.bak
+gpg --batch --output $DIR/db.zip.gpg --passphrase-file $DIR/vault-password --symmetric $DIR/db.zip
+###rm db.zip db.zip.gpg
+
+aws s3 cp "$DIR/db.zip.gpg" s3://opinion-stg-backup/vpn/ --region il-central-1
+
+cd $DIR
+
+rm db.zip db.zip.gpg

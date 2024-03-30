@@ -1,7 +1,7 @@
 #! /bin/bash
 
 ### Check if a directory does not exist ###
-aws s3api head-object --bucket {{s3_bucket_backup}} --key {{ private_dns }}/as.conf.bak || not_exist=true
+aws s3api head-object --bucket opinion-stg-backup --key vpn/db.zip.gpg || not_exist=true
 if [ $not_exist ]; then
   echo "it does not exist"
 exit 0
@@ -9,9 +9,13 @@ else
   echo "it exists"
 fi
 
-aws s3 cp s3://{{s3_bucket_backup}}/{{ private_dns }} /usr/local/openvpn_as/ --recursive
+aws s3 cp s3://opinion-stg-backup/vpn/db.zip.gpg . --region il-central-1
 
-/usr/local/bin/ansible-vault decrypt /usr/local/openvpn_as/*.bak --vault-password-file /opt/backup/vault-password
+###/tmp/ansible-openvpn/ansible-vault decrypt /usr/local/openvpn_as/*.bak --vault-password-file /opt/backup/vault-password
+
+gpg --batch --output db.zip --passphrase-file vault-password --decrypt db.zip.gpg
+unzip -o db.zip -d /
+rm db.zip db.zip.gpg
 
 # restore script
 cd /usr/local/openvpn_as/etc/db
@@ -22,6 +26,6 @@ cd /usr/local/openvpn_as/etc/db
 [ -e ../../log.db.bak ]&&rm log.db;sqlite3 <../../log.db.bak log.db
 [ -e ../../config_local.db.bak ]&&rm config_local.db;sqlite3 <../../config_local.db.bak config_local.db
 [ -e ../../cluster.db.bak ]&&rm cluster.db;sqlite3 <../../cluster.db.bak cluster.db
-[ -e ../../clusterdb.db.bak ]&&rm clusterdb.db;sqlite3 <../../clusterdb.db.bak clusterdb.db
+##[ -e ../../clusterdb.db.bak ]&&rm clusterdb.db;sqlite3 <../../clusterdb.db.bak clusterdb.db
 [ -e ../../notification.db.bak ]&&rm notification.db;sqlite3 <../../notification.db.bak notification.db
 [ -e ../../as.conf.bak ]&&cp ../../as.conf.bak ../as.conf

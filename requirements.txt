@@ -3,5 +3,6 @@
 # See the pip requirements file documentation for details:
 # https://pip.pypa.io/en/stable/user_guide/#requirements-files
 #
+ansible>=2.10
 botocore
 boto3
