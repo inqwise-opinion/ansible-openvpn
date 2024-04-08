@@ -16,11 +16,11 @@ cp ../as.conf ../../as.conf.bak
 ###/tmp/ansible-openvpn/ansible-vault encrypt /usr/local/openvpn_as/*.bak --vault-password-file /opt/backup/vault-password
 
 zip "$DIR/db.zip" /usr/local/openvpn_as/*.bak
-gpg --batch --output $DIR/db.zip.gpg --passphrase-file $DIR/vault-password --symmetric $DIR/db.zip
-###rm db.zip db.zip.gpg
+gpg --batch --output $DIR/{{ openvpn_backup_filename }} --passphrase-file $DIR/vault-password --symmetric $DIR/db.zip
+###rm db.zip {{ openvpn_backup_filename }}
 
-aws s3 cp "$DIR/db.zip.gpg" s3://opinion-stg-backup/vpn/ --region il-central-1
+aws s3 cp "$DIR/{{ openvpn_backup_filename }}" {{openvpn_backup_s3_path}}/ --region {{ec2_instance.region}}
 
 cd $DIR
 
-rm db.zip db.zip.gpg
+rm db.zip {{ openvpn_backup_filename }}

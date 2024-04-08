@@ -16,3 +16,8 @@
   notify:
     - update db
     - restart openvpn_as
+
+# - name: remove restore script
+#   ansible.builtin.file:
+#     path: /opt/backup/openvpn-restore.sh
+#     state: absent
