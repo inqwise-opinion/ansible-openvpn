@@ -9,30 +9,8 @@
       value: "{{ ec2_instance.public_ip }}"
       ttl: 120
 
-- name: Gather information about any VPC route tables
-  amazon.aws.ec2_vpc_route_table_info:
-    region: "{{ ec2_instance.region }}"
-    filters:
-      vpc-id: "{{ ec2_instance.vpc_id }}"
-  register: route_table_info_result
-
-    #public subnets
-    #msg: "{{ route_table_info_result.route_tables | json_query('[?associations[?association_state.state==`associated`] && routes[? starts_with(not_null(@.gateway_id, ``),`igw-`) && @.destination_cidr_block==`0.0.0.0/0`]].{subnets: associations[*].subnet_id, route: routes[? starts_with(not_null(@.gateway_id, ``),`igw-`) && @.destination_cidr_block==`0.0.0.0/0`]|[0]}')}}"
-    #private subnets
-    #msg: "{{ route_table_info_result.route_tables | json_query('[?associations[?association_state.state==`associated` && not_null(@.subnet_id) ] && length(routes[? starts_with(not_null(@.gateway_id, ``),`igw-`)])==`0`].{subnets: associations[*].subnet_id, route: routes[?destination_cidr_block != null]}')}}"
-
-- set_fact:
-    private_routes: "{{ route_table_info_result.route_tables | json_query('[?associations[?association_state.state==`associated` && not_null(@.subnet_id) ] && length(routes[? starts_with(not_null(@.gateway_id, ``),`igw-`)])==`0`].{subnets: associations[*].subnet_id, route: routes[?destination_cidr_block != null]}')}}"
-
-- debug: var=private_routes
-  tags: debug
-
-- debug:
-    msg: "{{ private_routes | map(attribute='subnets') | flatten }}"
-  tags: debug
-
 - include_role:
-    name: masquerade
+    name: nat
 
 - include_role:
     name: openvpnas
@@ -41,22 +19,3 @@
     openvpn_as_vpn_server_routing_private_networks: ["{{ ec2_instance.vpc_cidr }}"]
   tags: openvpn
 
-- name: Disable source/dest check
-  ec2_eni:
-    eni_id: "{{ ec2_instance.eni_id }}"
-    region: "{{ ec2_instance.region }}"
-    source_dest_check: false
-
-- name: Add ENI to VPC routing
-  ec2_vpc_route_table:
-    vpc_id: "{{ ec2_instance.vpc_id }}"
-    # some other params
-    #subnets: "{{ vpc_private_subnets|list|map(attribute='id')|list }}"
-    tags:
-      Name: Internal NAT
-    subnets: "{{ private_routes | map(attribute='subnets') | flatten }}"
-    #  - subnet-0e6d52693f72347e4
-    routes:
-      - dest: 0.0.0.0/0
-        instance_id: "{{ ec2_instance.id }}"
-    region: "{{ ec2_instance.region }}"

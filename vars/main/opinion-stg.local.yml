@@ -1,0 +1,2 @@
+environment_name: opinion-stg
+s3_bucket_backup: opinion-stg-backup

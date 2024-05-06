@@ -8,5 +8,6 @@
   when:
     - dns_record_list is defined 
   listen: "aws postactions"
+  tags: configuration
 
   

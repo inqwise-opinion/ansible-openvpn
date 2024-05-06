@@ -1,5 +1,3 @@
----
-
 - name: Create Iptables NAT chain
   iptables:
     table: nat
@@ -10,6 +8,7 @@
     jump: MASQUERADE
     protocol: '{{ masquerade_protocol }}'
     comment: 'Ansible NAT Masquerade'
+  tags: installation
 
 - name: Enable IPv4 forwarding
   sysctl:
@@ -17,3 +16,4 @@
     value: 1
     state: present
     reload: True
+  tags: installation  

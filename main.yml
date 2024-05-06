@@ -17,7 +17,8 @@
       ansible.builtin.package:
         name:
           - 'mc'
-        state: present    
+        state: present
+      tags: installation
 
     - name: include main vars
       include_vars:

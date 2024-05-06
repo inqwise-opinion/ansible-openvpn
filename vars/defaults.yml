@@ -1,0 +1,14 @@
+---
+discord_webhook: https://discord.com/api/webhooks/{{ discord_message_webhook_id }}/{{ discord_message_webhook_token }}
+discord_channel: "#notifications"
+public_dns: vpn
+private_dns: vpn
+public_domain: inqwise-stg.com
+private_domain: "opinion-stg.local"
+openvpn_user: "openvpn"
+openvpn_group: "{{ openvpn_user }}"
+masquerade:
+    masquerade_out_interface: "eth0"
+    masquerade_source: "10.41.0.0/16"
+    masquerade_protocol: "tcp"
+backup_bucket: backup-opinion-stg

@@ -1,0 +1,2 @@
+environment_name: opinion-prod
+s3_bucket_backup: opinion-backup
