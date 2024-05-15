@@ -24,7 +24,7 @@ main () {
     #yum install jq -y
     #EXTRA=$(echo "${EXTRA:=\{\}}" |  jq --slurp --compact-output --raw-output 'reduce .[] as $item ({}; . * $item)')
     echo "extra:${EXTRA:=default}"
-    pip3.8 install -r requirements.txt
+    pip3.8 install -r requirements.txt --timeout 60
     export PATH=$PATH:/usr/local/bin
     export ANSIBLE_ROLES_PATH="$(pwd)/ansible-galaxy/roles"
     ansible-galaxy install -p roles -r requirements.yml

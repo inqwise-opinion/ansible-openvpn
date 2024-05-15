@@ -28,4 +28,11 @@
     that: 
       - private_routes|length > 0
     msg: "private_routes is empty"
-    notify: "apply aws nat"
+
+- name: debug just to trigger a handler
+  debug:
+    msg: "trigger a handler"
+  changed_when: true
+  when: private_routes|length > 0
+  notify:
+    - apply aws nat
