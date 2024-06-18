@@ -58,7 +58,7 @@ Vagrant.configure("2") do |config|
     aws.associate_public_ip = true
     aws.iam_instance_profile_name = "bootstrap-role"
     aws.tags = {
-      Name: 'openvpn'
+      Name: "openvpn-test-#{Etc.getpwuid(Process.uid).name}"
     }
   end
 end
