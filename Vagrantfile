@@ -16,7 +16,7 @@ Vagrant.configure("2") do |config|
     echo $PWD
     export VAULT_PASSWORD=#{`op read "op://Security/ansible-vault inqwise-stg/password"`.strip!}
     echo "$VAULT_PASSWORD" > vault_password
-    curl -s https://raw.githubusercontent.com/inqwise/ansible-automation-toolkit/master/main_amzn2.sh | bash -s -- -r #{AWS_REGION} -e "playbook_name=openvpn-test discord_message_owner_name=#{Etc.getpwuid(Process.uid).name}"
+    curl -s https://raw.githubusercontent.com/inqwise/ansible-automation-toolkit/master/main_amzn2.sh | bash -s -- -r #{AWS_REGION} -e "playbook_name=openvpn-test discord_message_owner_name=#{Etc.getpwuid(Process.uid).name}" --topic-name #{TOPIC_NAME} --account-id #{ACCOUNT_ID}
     rm vault_password
   SHELL
 

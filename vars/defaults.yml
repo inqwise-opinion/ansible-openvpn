@@ -5,8 +5,14 @@ public_dns: vpn
 private_dns: vpn
 public_domain: inqwise-stg.com
 private_domain: "opinion-stg.local"
-openvpn_user: "openvpn"
-openvpn_group: "{{ openvpn_user }}"
+app_user: "openvpn"
+app_group: "{{ app_user }}"
+users_groups:
+  - name: "{{ app_group }}"
+users:
+  - name: "{{ app_user }}"
+    group: "{{ app_group }}"
+    append: yes
 masquerade:
     masquerade_out_interface: "eth0"
     masquerade_source: "10.41.0.0/16"
