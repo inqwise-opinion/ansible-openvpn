@@ -9,13 +9,17 @@
       value: "{{ ec2_instance.public_ip }}"
       ttl: 120
 
-- include_role:
+- name:
+  ansible.builtin.include_role:
     name: nat
+    apply:
+      tags: configuration
+  tags: configuration
 
 - include_role:
     name: openvpnas
   vars:
     openvpn_as_host_name: "{{ public_dns }}.{{ public_domain }}"
     openvpn_as_vpn_server_routing_private_networks: ["{{ ec2_instance.vpc_cidr }}"]
-  tags: openvpn
+  tags: installation
 
