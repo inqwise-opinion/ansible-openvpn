@@ -18,3 +18,4 @@ masquerade:
     masquerade_source: "10.41.0.0/16"
     masquerade_protocol: "tcp"
 backup_bucket: backup-opinion-stg
+aws_iam_role: "vpn-role"
