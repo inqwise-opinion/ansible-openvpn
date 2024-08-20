@@ -10,8 +10,13 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
+      - name: configure-aws-credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: il-central-1
+          
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -29,9 +34,5 @@ jobs:
           echo "REPO_NAME=${REPO_NAME}" >> $GITHUB_ENV
       
       - name: Copy to S3
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.OPINION_STG__ANSIBLE_PLAYBOOK__AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.OPINION_STG__ANSIBLE_PLAYBOOK__AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: 'il-central-1'
         run: |
           aws s3 cp . s3://bootstrap-opinion-stg/playbooks/${REPO_NAME}/${TAG_NAME}/ --recursive --exclude ".*" --exclude ".*/**"
