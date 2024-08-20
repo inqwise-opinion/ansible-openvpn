@@ -1,0 +1,37 @@
+name: Deploy to S3 on Tag
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+      
+      - name: Set Variables
+        id: vars
+        run: |
+          TAG_NAME=${GITHUB_REF##*/}
+          REPO_NAME=${GITHUB_REPOSITORY##*/}
+          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
+          echo "REPO_NAME=${REPO_NAME}" >> $GITHUB_ENV
+      
+      - name: Copy to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.OPINION_STG__ANSIBLE_PLAYBOOK__AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.OPINION_STG__ANSIBLE_PLAYBOOK__AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'il-central-1'
+        run: |
+          aws s3 cp . s3://bootstrap-opinion-stg/playbooks/${REPO_NAME}/${TAG_NAME}/ --recursive --exclude ".*" --exclude ".*/**"
