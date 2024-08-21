@@ -1,8 +1,9 @@
-/**/target/
 /**/.*
 /**/.*/
 !/.gitignore
-/**/generated/
-!**/log4j2-test.xml
-config
-opinion-automation-app/queues
+*-test.*
+main.sh
+main.yml
+goldenimage_script.sh
+manifest.json
+goldenimage_result.json

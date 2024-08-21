@@ -37,6 +37,10 @@ jobs:
           echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
           echo "REPO_NAME=${REPO_NAME}" >> $GITHUB_ENV
       
+      - name: Delete existing files from S3
+        run: |
+          aws s3 rm s3://bootstrap-opinion-stg/playbooks/${REPO_NAME}/${TAG_NAME}/ --recursive
+      
       - name: Copy to S3
         run: |
-          aws s3 cp --delete . s3://bootstrap-opinion-stg/playbooks/${REPO_NAME}/${TAG_NAME}/ --recursive --exclude ".*" --exclude ".*/**" --exclude "Vagrantfile*"
+          aws s3 cp . s3://bootstrap-opinion-stg/playbooks/${REPO_NAME}/${TAG_NAME}/ --recursive --exclude ".*" --exclude ".*/**" --exclude "Vagrantfile*"
