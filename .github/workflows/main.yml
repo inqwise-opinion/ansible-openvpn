@@ -19,6 +19,8 @@ jobs:
     env:
       IS_TEST: ${{ github.ref == 'refs/heads/test-workflow' }}
     steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v4
       - name: Determine Branch for Tag
         run: |
           BRANCH_NAME=$(git name-rev --name-only ${{ github.sha }})
@@ -28,9 +30,6 @@ jobs:
             echo "This tag was not created on the 'master' or 'test-workflow' branch. Skipping deployment."
             exit 0
           fi
-  
-      - name: Git clone the repository
-        uses: actions/checkout@v4
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
