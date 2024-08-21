@@ -3,10 +3,10 @@ name: Deploy to S3 on Tag
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+*'
-      - '[0-9]+.[0-9]+.[0-9]+*'
-      - 'v[0-9]+.[0-9]+.[0-9]+-(CR|Beta|milestone)[0-9]*'
-      - '[0-9]+.[0-9]+.[0-9]+-(CR|Beta|milestone)[0-9]*'
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-(CR|Beta|milestone)[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-(CR|Beta|milestone)[0-9]+'
 
 
 permissions:
@@ -21,14 +21,29 @@ jobs:
     steps:
       - name: Git clone the repository
         uses: actions/checkout@v4
-      - name: Determine Branch for Tag
+      - name: Determine Ref Type (Branch or Tag)
+        id: ref-check
         run: |
-          BRANCH_NAME=$(git name-rev --name-only ${{ github.sha }})
-          echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
-          
-          if [[ "${BRANCH_NAME}" != "master" && "${BRANCH_NAME}" != "test-workflow" ]]; then
-            echo "This tag was not created on the 'master' or 'test-workflow' branch. Skipping deployment."
-            exit 0
+          if [[ "${GITHUB_REF}" == refs/heads/* ]]; then
+            BRANCH_NAME=${GITHUB_REF#refs/heads/}
+            echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
+          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+            echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
+            
+            # Find the branch from which the tag was created
+            COMMIT_SHA=$(git rev-list -n 1 ${{ github.sha }})
+            BRANCH_NAME=$(git branch -r --contains ${COMMIT_SHA} | grep -E 'origin/master|origin/test-workflow' | head -n 1 | awk -F'/' '{print $2}')
+            
+            if [[ -z "${BRANCH_NAME}" ]]; then
+              echo "Tag was not created from 'master' or 'test-workflow' branch. Exiting."
+              exit 0
+            fi
+            
+            echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
+          else
+            echo "Unsupported ref type. Exiting."
+            exit 1
           fi
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4
