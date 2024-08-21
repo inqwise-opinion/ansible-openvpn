@@ -29,12 +29,6 @@ jobs:
           if [[ "${GITHUB_REF}" == refs/heads/* ]]; then
             BRANCH_NAME=${GITHUB_REF#refs/heads/}
             echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
-          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            TAG_NAME=${GITHUB_REF#refs/tags/}
-            echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
-          else
-            echo "Unsupported ref type. Exiting."
-            exit 1
           fi
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -55,9 +49,6 @@ jobs:
           TAG_NAME=${GITHUB_REF##*/}
           REPO_NAME=${GITHUB_REPOSITORY##*/}
           S3_BASE_PATH="s3://bootstrap-opinion-stg/playbooks"
-          if [ "${{ env.IS_TEST }}" = "true" ]; then
-            S3_BASE_PATH="${S3_BASE_PATH}/test"
-          fi
           S3_PATH="${S3_BASE_PATH}/${REPO_NAME}/${TAG_NAME}"
           echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
           echo "REPO_NAME=${REPO_NAME}" >> $GITHUB_ENV
