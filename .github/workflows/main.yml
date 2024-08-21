@@ -33,8 +33,9 @@ jobs:
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
+          role-skip-session-tagging: true
           role-to-assume: arn:aws:iam::992382682634:role/ansible-playbook-workflow-role
-          role-session-name: samplerolesession
+          #role-session-name: samplerolesession
           aws-region: il-central-1
       
       - name: Install AWS CLI
