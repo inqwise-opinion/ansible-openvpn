@@ -39,4 +39,4 @@ jobs:
       
       - name: Copy to S3
         run: |
-          aws s3 cp . s3://bootstrap-opinion-stg/playbooks/${REPO_NAME}/${TAG_NAME}/ --recursive --exclude ".*" --exclude ".*/**"
+          aws s3 cp --delete . s3://bootstrap-opinion-stg/playbooks/${REPO_NAME}/${TAG_NAME}/ --recursive --exclude ".*" --exclude ".*/**" --exclude "Vagrantfile*"
