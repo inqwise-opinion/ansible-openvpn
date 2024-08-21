@@ -15,11 +15,21 @@ permissions:
 
 jobs:
   S3PackageUpload:
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/test-workflow'
     runs-on: ubuntu-latest
     env:
       IS_TEST: ${{ github.ref == 'refs/heads/test-workflow' }}
     steps:
+      - name: Determine Branch for Tag
+        id: vars
+        run: |
+          BRANCH_NAME=$(git name-rev --name-only ${{ github.sha }})
+          echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
+          
+          if [[ "${BRANCH_NAME}" != "master" && "${BRANCH_NAME}" != "test-workflow" ]]; then
+            echo "This tag was not created on the 'master' or 'test-workflow' branch. Skipping deployment."
+            exit 0
+          fi
+  
       - name: Git clone the repository
         uses: actions/checkout@v4
       - name: configure aws credentials
@@ -28,7 +38,7 @@ jobs:
           role-to-assume: arn:aws:iam::992382682634:role/ansible-playbook-workflow-role
           role-session-name: samplerolesession
           aws-region: il-central-1
-          
+      
       - name: Install AWS CLI
         run: |
           sudo apt-get update
