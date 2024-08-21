@@ -20,7 +20,6 @@ jobs:
       IS_TEST: ${{ github.ref == 'refs/heads/test-workflow' }}
     steps:
       - name: Determine Branch for Tag
-        id: vars
         run: |
           BRANCH_NAME=$(git name-rev --name-only ${{ github.sha }})
           echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
