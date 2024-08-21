@@ -3,9 +3,10 @@ name: Deploy to S3 on Tag
 on:
   push:
     tags:
-      - 'v*'
+      - '*'  # This will match any tag
     branches:
       - master
+
 permissions:
   id-token: write   # This is required for requesting the JWT
   contents: read    # This is required for actions/checkout
@@ -14,11 +15,12 @@ jobs:
   S3PackageUpload:
     runs-on: ubuntu-latest
     
-    if: github.ref == 'refs/heads/master' && startsWith(github.ref_name, 'v')
+    if: github.ref_type == 'tag' && github.base_ref == 'refs/heads/master'
     
     steps:
       - name: Git clone the repository
         uses: actions/checkout@v4
+        
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
