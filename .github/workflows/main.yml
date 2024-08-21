@@ -61,3 +61,12 @@ jobs:
       - name: Copy to S3
         run: |
           aws s3 cp . ${{ env.S3_PATH }}/ --recursive --exclude ".*" --exclude ".*/**" --exclude "Vagrantfile*"
+
+      - name: Install Packer
+        run: |
+          sudo apt-get install -y packer
+
+      - name: Execute Packer Build
+        if: env.TAG_NAME
+        run: |
+          packer build -var "tag=${TAG_NAME}" .
