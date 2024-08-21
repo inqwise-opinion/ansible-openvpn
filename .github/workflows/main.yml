@@ -10,10 +10,9 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+-(CR|Beta|milestone)[0-9]*'
       - '[0-9]+.[0-9]+.[0-9]+-(CR|Beta|milestone)[0-9]*'
 
-
 permissions:
-  id-token: write   # This is required for requesting the JWT
-  contents: read    # This is required for actions/checkout
+  id-token: write   # Required for requesting the JWT
+  contents: read    # Required for actions/checkout
 
 jobs:
   S3PackageUpload:
@@ -21,50 +20,59 @@ jobs:
     env:
       IS_TEST: ${{ github.ref == 'refs/heads/test-workflow' }}
     steps:
-      - name: Git clone the repository
+      - name: Check out the repository
         uses: actions/checkout@v4
+
       - name: Determine Ref Type (Branch or Tag)
         id: ref-check
         run: |
           if [[ "${GITHUB_REF}" == refs/heads/* ]]; then
             BRANCH_NAME=${GITHUB_REF#refs/heads/}
             echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
+          else
+            TAG_NAME=${GITHUB_REF##*/}
+            echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
           fi
-      - name: configure aws credentials
+
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-skip-session-tagging: true
           role-to-assume: arn:aws:iam::992382682634:role/ansible-playbook-workflow-role
-          #role-session-name: samplerolesession
           aws-region: il-central-1
-      
+
       - name: Install AWS CLI
         run: |
           sudo apt-get update
           sudo apt-get install -y awscli
-      
-      - name: Set Variables
+
+      - name: Set S3 Path Variables
         id: vars
         run: |
-          TAG_NAME=${GITHUB_REF##*/}
           REPO_NAME=${GITHUB_REPOSITORY##*/}
           S3_BASE_PATH="s3://bootstrap-opinion-stg/playbooks"
-          S3_PATH="${S3_BASE_PATH}/${REPO_NAME}/${TAG_NAME}"
-          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
-          echo "REPO_NAME=${REPO_NAME}" >> $GITHUB_ENV
-          echo "S3_PATH=${S3_PATH}" >> $GITHUB_ENV
-      
+          if [[ -n "${TAG_NAME}" ]]; then
+            S3_PATH="${S3_BASE_PATH}/${REPO_NAME}/${TAG_NAME}"
+            echo "S3_PATH=${S3_PATH}" >> $GITHUB_ENV
+          fi
+
       - name: Delete existing files from S3
+        if: env.TAG_NAME
         run: |
           aws s3 rm ${{ env.S3_PATH }}/ --recursive
-      
-      - name: Copy to S3
+
+      - name: Upload files to S3
+        if: env.TAG_NAME
         run: |
           aws s3 cp . ${{ env.S3_PATH }}/ --recursive --exclude ".*" --exclude ".*/**" --exclude "Vagrantfile*"
 
       - name: Install Packer
         run: |
           sudo apt-get install -y packer
+
+      - name: Install Packer Plugin for Amazon
+        run: |
+          packer init .
 
       - name: Execute Packer Build
         if: env.TAG_NAME
