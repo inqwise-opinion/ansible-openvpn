@@ -30,6 +30,10 @@ jobs:
         if: ${{ github.ref_type == 'tag' || env.IS_TEST }}
         run: "echo Triggered by tag: ${{ github.ref_name }}"
 
+      - name: Set S3_PATH Environment Variable
+        run: | 
+          echo "S3_PATH=${{ env.S3_BASE_PATH }}/${{ env.REPO_NAME }}/${{ env.TAG_NAME }}" >> $GITHUB_ENV
+
       - name: Check out the repository
         uses: actions/checkout@v4
 
