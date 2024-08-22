@@ -23,11 +23,11 @@ jobs:
       TAG_NAME: ${{ github.ref_name }}
       REPO_NAME: ${{ github.repository }}
       S3_BASE_PATH: "s3://bootstrap-opinion-stg/playbooks"
-      S3_PATH: "${{ env.S3_BASE_PATH }}/${{ env.REPO_NAME }}/${{ env.TAG_NAME }}"
+      S3_PATH: ${{ format('{0}/{1}/{2}', env.S3_BASE_PATH, env.REPO_NAME, env.TAG_NAME) }}
     
     steps:
       - name: Determine Tag
-        if: ${{ github.ref_type == "tag" || env.IS_TEST }}
+        if: ${{ github.ref_type == 'tag' || env.IS_TEST }}
         run: "echo Triggered by tag: ${{ github.ref_name }}"
 
       - name: Check out the repository
