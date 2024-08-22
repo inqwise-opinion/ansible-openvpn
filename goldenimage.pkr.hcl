@@ -115,12 +115,12 @@ build {
   ]
 
   provisioner "shell" {
-    scripts = [
-      "goldenimage-test.sh"
-    ]
-    #inline = [
-    #  "curl --connect-timeout 2.37 -m 20 -o /tmp/goldenimage.sh https://raw.githubusercontent.com/inqwise/ansible-automation-toolkit/default/goldenimage.sh && bash /tmp/goldenimage.sh --tags installation",
+    #scripts = [
+    #  "goldenimage-test.sh"
     #]
+    inline = [
+      "curl --connect-timeout 2.37 -m 20 -o /tmp/goldenimage.sh https://raw.githubusercontent.com/inqwise/ansible-automation-toolkit/default/goldenimage.sh && bash /tmp/goldenimage.sh --tags installation",
+    ]
   }
 
   post-processor "manifest" {
