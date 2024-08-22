@@ -28,7 +28,7 @@ jobs:
     steps:
       - name: Determine Tag
         if: ${{ github.ref_type == "tag" || env.IS_TEST }}
-        run: echo "Triggered by tag: ${{ github.ref_name }}"
+        run: "echo Triggered by tag: ${{ github.ref_name }}"
 
       - name: Check out the repository
         uses: actions/checkout@v4
