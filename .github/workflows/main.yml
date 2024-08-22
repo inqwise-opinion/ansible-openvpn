@@ -20,15 +20,16 @@ jobs:
     continue-on-error: false
     env:
       IS_TEST: ${{ github.ref == 'refs/heads/test-workflow' }}
-      TAG_NAME: ${github.ref_name}
-      REPO_NAME: ${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}
+      TAG_NAME: ${{ github.ref_name }}
+      REPO_NAME: ${{ github.repository }}
       S3_BASE_PATH: "s3://bootstrap-opinion-stg/playbooks"
-      S3_PATH: "${S3_BASE_PATH}/${REPO_NAME}/${TAG_NAME}"
+      S3_PATH: "${{ env.S3_BASE_PATH }}/${{ env.REPO_NAME }}/${{ env.TAG_NAME }}"
     
     steps:
       - name: Determine Tag
-        if: ${{github.ref_type == "tag" || IS_TEST}}
-        
+        if: ${{ github.ref_type == "tag" || env.IS_TEST }}
+        run: echo "Triggered by tag: ${{ github.ref_name }}"
+
       - name: Check out the repository
         uses: actions/checkout@v4
 
@@ -44,12 +45,14 @@ jobs:
           sudo apt-get install -y awscli packer    
 
       - name: Delete existing files from S3
-        if: env.TAG_NAME
+        if: ${{ env.TAG_NAME != '' }}
         run: |
+          echo "Deleting files from ${{ env.S3_PATH }}/"
           aws s3 rm ${{ env.S3_PATH }}/ --recursive
 
       - name: Upload files to S3
         run: |
+          echo "Uploading files to ${{ env.S3_PATH }}/"
           aws s3 cp . ${{ env.S3_PATH }}/ --recursive --exclude ".*" --exclude ".*/**" --exclude "Vagrantfile*"
 
       - name: Install Packer Plugin for Amazon
@@ -58,4 +61,4 @@ jobs:
 
       - name: Execute Packer Build
         run: |
-          packer build -var "tag=${TAG_NAME}" .
+          packer build -var "tag=${{ env.TAG_NAME }}" .
