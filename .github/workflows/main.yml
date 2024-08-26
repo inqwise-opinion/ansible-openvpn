@@ -21,8 +21,15 @@ jobs:
     env:
       IS_TEST: ${{ github.ref == 'refs/heads/test-workflow' }}
       TAG_NAME: ${{ github.ref_name }}
-      REPO_NAME: ${{ github.repository }}
+      REPO_NAME: ${{ github.event.repository.name }}
       S3_BASE_PATH: "s3://bootstrap-opinion-stg/playbooks"
+      ROLE: "arn:aws:iam::992382682634:role/ansible-playbook-workflow-role"
+      REGION: "il-central-1"
+      CPU_ARCH: "x86"
+      OS: "amzn2"
+      PROFILE: "opinion-stg"
+      APP: "openvpn"
+      TOOLKIT_VERSION: "default"
     
     steps:
       - name: Determine Tag
@@ -39,8 +46,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::992382682634:role/ansible-playbook-workflow-role
-          aws-region: il-central-1
+          role-to-assume: ${{ env.ROLE }}
+          aws-region: ${{ env.REGION }}
 
       - name: Install Packages
         run: |
@@ -60,9 +67,9 @@ jobs:
 
       - name: Install Packer Plugin for Amazon
         run: |
-          curl -O https://raw.githubusercontent.com/inqwise/ansible-automation-toolkit/default/packer/goldenimage.pkr.hcl
+          curl -O https://raw.githubusercontent.com/inqwise/ansible-automation-toolkit/${{ env.TOOLKIT_VERSION }}/packer/goldenimage.pkr.hcl
           packer init .
 
       - name: Execute Packer Build
         run: |
-          packer build --only=amazon-ebs.amzn2_x86 -var cpu_arch=x86 -var 'aws_profile=opinion-stg' -var 'tag=${{ env.TAG_NAME }}' -var app=openvpn -var 'aws_region=il-central-1' goldenimage.pkr.hcl
+          packer build --only=amazon-ebs.${{ env.OS }}_${{ env.CPU_ARCH }} -var cpu_arch=${{ env.CPU_ARCH }} -var 'aws_profile=${{ env.PROFILE }}' -var 'tag=${{ env.TAG_NAME }}' -var app=${{ env.APP }} -var 'aws_region=${{ env.REGION }}' goldenimage.pkr.hcl
