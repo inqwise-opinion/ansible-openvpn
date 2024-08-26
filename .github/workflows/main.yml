@@ -65,4 +65,4 @@ jobs:
 
       - name: Execute Packer Build
         run: |
-          packer build --only=amazon-ebs.amzn2_x86 -var cpu_arch=x86 -var 'aws_profile=opinion-stg' -var 'tag={{ env.TAG_NAME }}' -var app=openvpn -var 'aws_region=il-central-1' goldenimage.pkr.hcl
+          packer build --only=amazon-ebs.amzn2_x86 -var cpu_arch=x86 -var 'aws_profile=opinion-stg' -var 'tag=${{ env.TAG_NAME }}' -var app=openvpn -var 'aws_region=il-central-1' goldenimage.pkr.hcl
