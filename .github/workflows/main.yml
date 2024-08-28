@@ -15,7 +15,7 @@ permissions:
   contents: read    # Required for actions/checkout
 
 jobs:
-  Golden-Image:
+  check-out-repository:
     runs-on: ubuntu-latest
     continue-on-error: false
     env:
@@ -25,43 +25,8 @@ jobs:
       S3_BASE_PATH: "s3://bootstrap-opinion-stg/playbooks"
     
     steps:
-      - name: Determine Tag
-        if: ${{ github.ref_type == 'tag' || env.IS_TEST }}
-        run: "echo Triggered by tag: ${{ github.ref_name }}"
-
-      - name: Set S3_PATH Environment Variable
-        run: | 
-          echo "S3_PATH=${{ env.S3_BASE_PATH }}/${{ env.REPO_NAME }}/${{ env.TAG_NAME }}" >> $GITHUB_ENV
-
       - name: Check out the repository
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::992382682634:role/ansible-playbook-workflow-role
-          aws-region: il-central-1
-
-      - name: Install Packages
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y awscli packer    
-
-      - name: Delete existing files from S3
-        if: ${{ env.TAG_NAME != '' }}
-        run: |
-          echo "Deleting files from ${{ env.S3_PATH }}/"
-          aws s3 rm ${{ env.S3_PATH }}/ --recursive
-
-      - name: Upload files to S3
-        run: |
-          echo "Uploading files to ${{ env.S3_PATH }}/"
-          aws s3 cp . ${{ env.S3_PATH }}/ --recursive --exclude ".*" --exclude ".*/**" --exclude "Vagrantfile*"
-
-      - name: Install Packer Plugin for Amazon
-        run: |
-          packer init .
-
-      - name: Execute Packer Build
-        run: |
-          curl -O https://raw.githubusercontent.com/inqwise/ansible-automation-toolkit/default/packer/goldenimage.pkr.hcl && packer build --only=amazon-ebs.amzn2_x86 -var cpu_arch=x86 -var 'aws_profile=opinion-stg' -var 'tag={{ env.TAG_NAME }}' -var app=openvpn -var 'aws_region=il-central-1' goldenimage.pkr.hcl
+      - name: calling reusable workflow
+        uses: ./.github/workflows/reusable-workflow.yml
