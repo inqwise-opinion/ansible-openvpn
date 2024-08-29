@@ -18,10 +18,10 @@ jobs:
   calling-reusable-workflow:
     uses: ./.github/workflows/reusable-workflow.yml
     with:
-      s3_base_path: "s3://bootstrap-opinion-stg/playbooks"
-      role: "arn:aws:iam::992382682634:role/ansible-playbook-workflow-role"
-      region: "il-central-1"
-      cpu_arch: "x86"
-      os: "amzn2"
-      app: "openvpn"
-      toolkit_version: "default"
+      S3_BASE_PATH: "s3://bootstrap-opinion-stg/playbooks"
+      ROLE: "arn:aws:iam::992382682634:role/ansible-playbook-workflow-role"
+      REGION: "il-central-1"
+      CPU_ARCH: "x86"
+      OS: "amzn2"
+      APP: "openvpn"
+      TOOLKIT_VERSION: "default"

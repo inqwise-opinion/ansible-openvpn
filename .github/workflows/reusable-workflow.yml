@@ -2,25 +2,25 @@ name: Reusable Workflow
 on:
   workflow_call:
     inputs:
-      s3_base_path:
+      S3_BASE_PATH:
         required: true
         type: string
-      role:
+      ROLE:
         required: true
         type: string
-      region:
+      REGION:
         required: true
         type: string
-      cpu_arch:
+      CPU_ARCH:
         required: true
         type: string
-      os:
+      OS:
         required: true
         type: string
-      app:
+      APP:
         required: true
         type: string
-      toolkit_version:
+      TOLLKIT_VERSION:
         required: true
         type: string
 
@@ -36,13 +36,6 @@ jobs:
       IS_TEST: ${{ github.ref == 'refs/heads/test-workflow' }}
       TAG_NAME: ${{ github.ref_name }}
       REPO_NAME: ${{ github.event.repository.name }}
-      S3_BASE_PATH: "s3://bootstrap-opinion-stg/playbooks"
-      ROLE: "arn:aws:iam::992382682634:role/ansible-playbook-workflow-role"
-      REGION: "il-central-1"
-      CPU_ARCH: "x86"
-      OS: "amzn2"
-      APP: "openvpn"
-      TOOLKIT_VERSION: "default"
     
     steps:
       - name: Determine Tag
