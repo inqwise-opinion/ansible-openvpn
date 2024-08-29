@@ -20,7 +20,7 @@ on:
       APP:
         required: true
         type: string
-      TOLLKIT_VERSION:
+      TOOLKIT_VERSION:
         required: true
         type: string
 
