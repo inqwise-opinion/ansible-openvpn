@@ -44,7 +44,7 @@ jobs:
 
       - name: Set S3_PATH Environment Variable
         run: | 
-          echo "S3_PATH=${{ env.S3_BASE_PATH }}/${{ env.REPO_NAME }}/${{ env.TAG_NAME }}" >> $GITHUB_ENV
+          echo "S3_PATH=${{ inputs.S3_BASE_PATH }}/${{ env.REPO_NAME }}/${{ env.TAG_NAME }}" >> $GITHUB_ENV
 
       - name: Check out the repository
         uses: actions/checkout@v4
@@ -52,8 +52,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ env.ROLE }}
-          aws-region: ${{ env.REGION }}
+          role-to-assume: ${{ inputs.ROLE }}
+          aws-region: ${{ inputs.REGION }}
 
       - name: Install Packages
         run: |
@@ -73,9 +73,9 @@ jobs:
 
       - name: Install Packer Plugin for Amazon
         run: |
-          curl -O https://raw.githubusercontent.com/inqwise/ansible-automation-toolkit/${{ env.TOOLKIT_VERSION }}/packer/goldenimage.pkr.hcl
+          curl -O https://raw.githubusercontent.com/inqwise/ansible-automation-toolkit/${{ inputs.TOOLKIT_VERSION }}/packer/goldenimage.pkr.hcl
           packer init .
 
       - name: Execute Packer Build
         run: |
-          packer build --only=amazon-ebs.${{ env.OS }}_${{ env.CPU_ARCH }} -var cpu_arch=${{ env.CPU_ARCH }} -var 'tag=${{ env.TAG_NAME }}' -var app=${{ env.APP }} -var 'aws_region=${{ env.REGION }}' goldenimage.pkr.hcl
+          packer build --only=amazon-ebs.${{ inputs.OS }}_${{ inputs.CPU_ARCH }} -var cpu_arch=${{ inputs.CPU_ARCH }} -var 'tag=${{ env.TAG_NAME }}' -var app=${{ inputs.APP }} -var 'aws_region=${{ inputs.REGION }}' goldenimage.pkr.hcl
