@@ -1,0 +1,9 @@
+---
+
+roles:
+  - name: users
+    src: https://github.com/robertdebock/ansible-role-users/archive/refs/tags/5.6.0.tar.gz
+
+collections:
+  - name: https://github.com/inqwise/ansible-common-collection/releases/download/v1/inqwise-common-1.0.0.tar.gz
+  - name: https://github.com/inqwise/ansible-stack-trek/releases/download/v1/inqwise-stacktrek-1.0.0.tar.gz
