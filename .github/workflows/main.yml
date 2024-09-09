@@ -1,4 +1,4 @@
-name: Openvpn workflow
+name: Openvpn on tag
 
 on:
   push:
@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 jobs:
-  goldenimage-workflow:
+  goldenimage:
     uses: inqwise/ansible-automation-toolkit/.github/workflows/goldenimage-workflow.yml@default
     with:
       S3_BASE_PATH: "s3://bootstrap-opinion-stg/playbooks"
