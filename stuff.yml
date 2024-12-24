@@ -1,5 +1,6 @@
 ---
-- import_role:
+- name: AWS Role
+  ansible.builtin.import_role:
     name: aws
   vars:
     dns_record_list:
@@ -19,9 +20,92 @@
       tags: configuration
   tags: configuration
 
-- name: Import openvpnas role 
+- name: Openvpnas Role 
   ansible.builtin.import_role:
     name: inqwise.stacktrek.openvpnas
   vars:
     openvpn_as_host_name: "{{ public_dns }}.{{ public_domain }}"
     openvpn_as_vpn_server_routing_private_networks: ["{{ ec2_instance.vpc_cidr }}"]
+
+- name: Install Alloy
+  ansible.builtin.include_role:
+    name: alloy
+  tags: always
+  vars:
+    alloy_user_groups:
+      - systemd-journal
+      - "{{ app_group }}"
+    env_file_vars:
+      CUSTOM_ARGS: "--server.http.listen-addr=0.0.0.0:12345 --disable-reporting=true --stability.level=public-preview"
+    config: |
+      loki.write "local" {
+        endpoint {
+          url = "{{ loki_base_url }}/loki/api/v1/push"
+        }
+      }
+
+      loki.relabel "journal" {
+        forward_to = []
+
+        rule {
+          source_labels = ["__journal__systemd_unit"]
+          regex         = "(openvpnas.service|telegraf.service)"
+          action        = "keep"
+        }
+        rule {
+          source_labels = ["__journal__systemd_unit"]
+          target_label  = "unit"
+        }
+        rule {
+          source_labels = ["__journal__hostname"]
+          target_label  = "instance"
+        }
+      }
+
+      loki.source.journal "read" {
+        forward_to = [
+          loki.write.local.receiver,
+        ]
+        relabel_rules = loki.relabel.journal.rules
+        labels = {
+          "job" = "integrations/node_exporter",
+          "app" = "openvpn",
+        }
+      }
+
+      local.file_match "local_files" {
+        path_targets = [{"__path__" = "/var/log/openvpnas.log"}]
+        sync_period = "10s"
+      }
+
+      loki.source.file "log_scrape" {
+        targets    = local.file_match.local_files.targets
+        forward_to = [loki.process.filter_logs.receiver]
+        tail_from_end = true
+      }
+      loki.process "filter_logs" {
+        #stage.multiline {
+        #  firstline = "^\\[(?P<timestamp>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2},\\d{3})\\]"
+        #}
+
+        stage.regex {
+          expression = "^(?P<timestamp>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}).+\[stdout#(?P<level>[a-z]+)\].+ OUT: '(?P<message>.+)'$"
+        }
+        stage.labels {
+          values = {
+            "level" = "level",
+            "logger" = "logger",
+            "timestamp" = "timestamp",
+            "node" = "node",
+          }
+        }
+        stage.static_labels {
+          values = {
+            "app" = "elastic",
+            "unit"= "elasticsearch.service",
+          }
+        }
+        forward_to = [
+          loki.write.local.receiver,
+        ]
+      }
