@@ -1,6 +1,7 @@
 ---
-- import_role:
-    name: aws
+- name: AWS role
+  ansible.builtin.import_role:
+    name: inqwise.common.aws
   vars:
     dns_record_list:
     - name: "{{ public_dns }}.{{ public_domain }}"
@@ -25,3 +26,46 @@
   vars:
     openvpn_as_host_name: "{{ public_dns }}.{{ public_domain }}"
     openvpn_as_vpn_server_routing_private_networks: ["{{ ec2_instance.vpc_cidr }}"]
+
+- name: Install Alloy
+  ansible.builtin.include_role:
+    name: inqwise.common.alloy
+  tags: always
+  vars:
+    alloy_user_groups:
+      - systemd-journal
+    config: |
+      loki.write "local" {
+        endpoint {
+          url = "http://loki.{{ private_domain }}:3100/loki/api/v1/push"
+        }
+      }
+
+      loki.relabel "journal" {
+        forward_to = []
+
+        rule {
+          source_labels = ["__journal__systemd_unit"]
+          regex         = "(openvpnas.service|telegraf.service)"
+          action        = "keep"
+        }
+        rule {
+          source_labels = ["__journal__systemd_unit"]
+          target_label  = "unit"
+        }
+        rule {
+          source_labels = ["__journal__hostname"]
+          target_label  = "instance"
+        }
+      }
+
+      loki.source.journal "read" {
+        forward_to = [
+          loki.write.local.receiver,
+        ]
+        relabel_rules = loki.relabel.journal.rules
+        labels = {
+          "job" = "integrations/node_exporter",
+          "app" = "openvpn",
+        }
+      }
